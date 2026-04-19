@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MedVault - Pro Health Record</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body>
+
+    <!-- ─── Animated Background Canvas ─── -->
+    <div class="bg-canvas">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+    </div>
+
+    <!-- App Header -->
+    <header class="app-header">
+        <div class="header-left">
+            <button class="icon-btn hamburger-btn" onclick="toggleSidebar()" title="Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="logo">
+                <i class="fa-solid fa-staff-snake"></i>
+                <span>MedVault</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <select id="profile-selector" class="profile-select" onchange="switchProfile(this.value)"></select>
+            <button class="icon-btn" onclick="toggleNightMode()" title="Night Mode"><i class="fa-solid fa-moon"></i></button>
+            <button class="icon-btn" onclick="openFamilyModal()" title="Family Vault"><i class="fa-solid fa-users-gear"></i></button>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Navigation</h3>
+            <button class="icon-btn" onclick="closeSidebar()" style="box-shadow:none;border:1px solid var(--glass-border)"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <nav class="sidebar-nav">
+            <button class="nav-item active" onclick="switchView('dashboard')"><i class="fa-solid fa-house"></i><span>Home Dashboard</span></button>
+            <button class="nav-item" onclick="switchView('health-form')"><i class="fa-solid fa-heart-pulse"></i><span>Log Health Data</span></button>
+            <button class="nav-item" onclick="switchView('timeline')"><i class="fa-solid fa-clock-rotate-left"></i><span>Timeline & Tabs</span></button>
+            <button class="nav-item" onclick="switchView('upload')"><i class="fa-solid fa-arrow-up-from-bracket"></i><span>Upload Record</span></button>
+            <button class="nav-item" onclick="switchView('reminders')"><i class="fa-solid fa-clock"></i><span>Med Reminders</span></button>
+            <button class="nav-item" onclick="switchView('chat')"><i class="fa-solid fa-robot"></i><span>AI Assistant</span></button>
+            <button class="nav-item" onclick="switchView('creators')"><i class="fa-solid fa-laptop-code"></i><span>About Creators</span></button>
+            <hr class="sidebar-divider">
+            <button class="nav-item" onclick="openShareModalFromSidebar()"><i class="fa-solid fa-share-nodes"></i><span>Share Vault Link</span></button>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="app-content">
+
+        <!-- DASHBOARD -->
+        <section id="view-dashboard" class="view active">
+            <div class="welcome-card">
+                <h2 id="welcome-text">Welcome to MedVault</h2>
+                <p id="welcome-subtext" class="text-sm mt-3">Ready to securely track your family's vital parameters.</p>
+            </div>
+
+            <div class="card mt-4" id="chart-card">
+                <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                    <h3 class="font-medium"><i class="fa-solid fa-chart-line text-primary"></i> Vitals & Lab Trends</h3>
+                    <button class="btn btn-outline" onclick="switchView('health-form')">+ Add Data</button>
+                </div>
+                <div class="chart-container"><canvas id="vitalsChart"></canvas></div>
+            </div>
+
+            <h3 class="section-title mt-4 mb-3 font-medium">Recent Activity</h3>
+            <div id="recent-activity-container" class="recent-list"></div>
+        </section>
+
+        <!-- LOG HEALTH DATA -->
+        <section id="view-health-form" class="view">
+            <div style="display:flex; justify-content:space-between; align-items:center;" class="mb-4">
+                <h2 class="page-title font-medium">Log Health & Lab Data</h2>
+                <button class="icon-btn" id="health-mic-btn" type="button" onclick="toggleHealthMic()" title="Dictate Vitals">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
+            </div>
+            <div class="card">
+                <p class="text-sm text-muted mb-4">Enter manual lab tests and parameters to reflect in your health graph.</p>
+                <form id="vitals-form">
+                    <div class="form-group"><label>Record Date</label><input type="date" id="vital-date" required></div>
+                    <div class="form-group"><label>Blood Sugar Level (mg/dL)</label><input type="number" id="vital-sugar" placeholder="e.g. 110"></div>
+                    <div class="form-group"><label>Systolic Blood Pressure (mmHg)</label><input type="number" id="vital-bp" placeholder="e.g. 120"></div>
+                    <div class="form-group"><label>HbA1c Lab Test (%)</label><input type="number" step="0.1" id="vital-hba1c" placeholder="e.g. 5.8"></div>
+                    <button type="submit" class="btn btn-primary w-100 mt-3">Save & Update Graph</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- UPLOAD & OCR -->
+        <section id="view-upload" class="view">
+            <h2 class="page-title mb-4 font-medium">Add Medical Record</h2>
+            <div class="upload-zone" id="drop-zone">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <p>Upload Clinical Report or Rx</p>
+                <span class="text-sm text-muted">Supports JPG and PNG images</span>
+                <input type="file" id="file-input" accept="image/*" hidden>
+            </div>
+            <div id="ocr-loader" class="card mt-4 hidden">
+                <div class="spinner"></div>
+                <p id="ocr-status" class="text-sm font-medium mt-3" style="text-align:center;">Scanning Document... 0%</p>
+                <div class="progress-bar"><div class="progress" id="ocr-progress"></div></div>
+            </div>
+            <div id="ocr-result" class="card mt-4 hidden fade-in">
+                <h3 class="mb-3 font-medium"><i class="fa-solid fa-wand-magic-sparkles text-primary"></i> Extracted Insights</h3>
+                <div class="preview-box"><img id="uploaded-image-preview" src="" alt="Uploaded Document Preview"></div>
+                <form id="record-form">
+                    <div class="form-group"><label>Detected Record Type</label><select id="record-type" class="form-input"><option value="Rx">Prescription (Rx)</option><option value="Lab">Lab Test / Report</option><option value="Visit">Consultation / Visit</option></select></div>
+                    <div class="form-group"><label>Report Date</label><input type="date" id="record-date" required></div>
+                    <div class="form-group"><label>Doctor or Institution</label><input type="text" id="record-doctor" required></div>
+                    <div class="form-group"><label>Diagnosis & Notes (e.g. HbA1c)</label><input type="text" id="record-diagnosis"></div>
+                    <div class="form-group"><label>Medicines (Comma separated list)</label><textarea id="record-medicines" rows="2"></textarea></div>
+                    <div id="drug-warning" class="warning-box hidden mt-3"><i class="fa-solid fa-triangle-exclamation"></i><span id="warning-text"></span></div>
+                    <button type="submit" class="btn btn-primary w-100 mt-3">Securely Save Record</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- TIMELINE -->
+        <section id="view-timeline" class="view">
+            <div class="timeline-header">
+                <h2 class="page-title mb-3 font-medium">Record Tabs</h2>
+                <div class="search-box"><i class="fa-solid fa-search"></i><input type="text" id="timeline-search" placeholder="Search diagnoses, doctors..." onkeyup="filterTimeline()"></div>
+                <div class="filter-chips" id="record-tabs">
+                    <button class="chip active" onclick="setTimelineFilter('All')">All Records</button>
+                    <button class="chip" onclick="setTimelineFilter('Visit')">Consultations</button>
+                    <button class="chip" onclick="setTimelineFilter('Lab')">Lab Tests</button>
+                    <button id="tab-rx" class="chip" onclick="setTimelineFilter('Rx')">Prescriptions (Rx)</button>
+                </div>
+            </div>
+            <div class="timeline mt-4" id="timeline-container"></div>
+        </section>
+
+        <!-- MEDICATION REMINDERS -->
+        <section id="view-reminders" class="view">
+            <h2 class="page-title mb-4 font-medium">Medication Reminders</h2>
+            <div class="card">
+                <p class="text-sm text-muted mb-4">Set daily alarms for your active prescriptions.</p>
+                <form id="reminder-form">
+                    <div class="form-group">
+                        <label>Medicine Name</label>
+                        <input type="text" id="rem-name" placeholder="e.g. Lisinopril 10mg" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Time to Take</label>
+                        <input type="time" id="rem-time" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 mt-3">Set Reminder</button>
+                </form>
+            </div>
+
+            <h3 class="section-title mt-4 mb-3 font-medium">Active Daily Reminders</h3>
+            <div id="reminders-list" class="recent-list"></div>
+        </section>
+
+        <!-- ABOUT CREATORS / DEVELOPERS (UPDATED) -->
+        <section id="view-creators" class="view">
+            <h2 class="page-title mb-4 font-medium">Meet The Developers</h2>
+            
+            <div class="card mb-4" style="text-align: center; padding: 30px 20px;">
+                <!-- Sounak's Image Container -->
+                <div style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 16px; box-shadow: 0 8px 20px var(--primary-glow); border: 2px solid var(--primary); overflow: hidden; background: var(--glass-bg-mid);">
+                    <!-- Replace 'sounak.jpg' with your actual image path or URL -->
+                    <img src="sounak.jpeg" alt="Sounak Datta" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                
+                <h3 class="font-medium" style="font-size: 1.3rem;">Sounak Datta</h3>
+                <p class="text-sm text-muted mt-2"><i class="fa-solid fa-building-columns"></i> GCELT | <i class="fa-solid fa-laptop-code"></i> CSE Stream</p>
+                <a href="https://www.linkedin.com/in/sounak-datta-336b17384?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" class="btn btn-primary w-100 mt-3" style="text-decoration: none;">
+                    <i class="fa-brands fa-linkedin"></i> Connect on LinkedIn
+                </a>
+            </div>
+
+            <div class="card" style="text-align: center; padding: 30px 20px;">
+                <!-- Shayan's Image Container -->
+                <div style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 16px; box-shadow: 0 8px 20px var(--secondary-glow); border: 2px solid var(--secondary); overflow: hidden; background: var(--glass-bg-mid);">
+                    <!-- Replace 'shayan.jpg' with your actual image path or URL -->
+                    <img src="shayan.jpeg" alt="Shayan Datta" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+
+                <h3 class="font-medium" style="font-size: 1.3rem;">Shayan Datta</h3>
+                <p class="text-sm text-muted mt-2"><i class="fa-solid fa-building-columns"></i> UIT Burdwan | <i class="fa-solid fa-laptop-code"></i> CSE Stream</p>
+                <a href="https://www.linkedin.com/in/shayan-datta-9584b0384?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" class="btn btn-primary w-100 mt-3" style="text-decoration: none;">
+                    <i class="fa-brands fa-linkedin"></i> Connect on LinkedIn
+                </a>
+            </div>
+        </section>
+
+        <!-- AI CHAT -->
+        <section id="view-chat" class="view">
+            <h2 class="page-title mb-3 font-medium">MedVault AI Assistant</h2>
+            <div class="chat-messages card" id="chat-messages" style="background:var(--bg);padding:15px;">
+                <div class="message bot"><div class="bubble">Hello! I am your MedVault AI. Ask me about your health conditions, medications, or to show your vitals (sugar, pressure, HbA1c) for a specific date or month!</div></div>
+            </div>
+            <div class="chat-input-area">
+                <button class="icon-btn tts-inactive" id="tts-toggle-btn" onclick="toggleTTS()" title="Toggle AI Voice"><i class="fa-solid fa-volume-xmark"></i></button>
+                <input type="text" id="chat-input" placeholder="Ask about health or specific vitals..." onkeypress="handleChatEnter(event)">
+                <button class="icon-btn" id="mic-btn" onclick="toggleMic()" title="Dictate & Send"><i class="fa-solid fa-microphone"></i></button>
+                <button class="icon-btn text-primary" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Share Modal -->
+    <div class="modal-overlay" id="share-modal">
+        <div class="modal card">
+            <div class="modal-header">
+                <h3 class="font-medium">Share Health Record</h3>
+                <button class="icon-btn" onclick="closeShareModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-sm text-muted mb-4">Generate a secure, expiring link to share your medical timeline with a doctor.</p>
+                <div class="form-group"><label>Link Expires In:</label><select id="link-expiry" class="form-input"><option value="1d">1 Day</option><option value="1m">1 Month</option><option value="2m">2 Months</option></select></div>
+                <div class="form-group hidden" id="secure-link-container">
+                    <label>Secure URL:</label>
+                    <input type="text" id="secure-link" class="form-input mb-3" readonly>
+                    <button class="btn btn-outline w-100" onclick="copyShareLink()"><i class="fa-regular fa-copy"></i> Copy Link</button>
+                </div>
+                <button class="btn btn-primary w-100 mt-2" id="generate-link-btn" onclick="generateShareLink()">Generate Secure Link</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Family Modal -->
+    <div class="modal-overlay" id="family-modal">
+        <div class="modal card">
+            <div class="modal-header">
+                <h3 class="font-medium">Family Profiles</h3>
+                <button class="icon-btn" onclick="closeFamilyModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div id="family-list" class="family-list mb-3"></div>
+                <div class="form-group mt-4">
+                    <label>Add New Profile</label>
+                    <input type="text" id="new-member-name" placeholder="Name" class="form-input mb-2">
+                    <input type="text" id="new-member-relation" placeholder="Relation (e.g. Spouse, Son)" class="form-input">
+                </div>
+                <button class="btn btn-primary w-100" onclick="addFamilyMember()">Add Member</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alarm Modal -->
+    <div class="modal-overlay" id="alarm-modal">
+        <div class="modal card" style="text-align: center; border: 1px solid var(--warning); box-shadow: 0 10px 40px var(--warning);">
+            <i class="fa-solid fa-bell text-warning" style="font-size: 3.5rem; margin-bottom: 20px; animation: pulseRecord 1s infinite;"></i>
+            <h3 class="font-display mb-2" style="font-size: 1.6rem; color: #fff;">Medication Reminder</h3>
+            <p id="alarm-medicine-name" class="text-main mb-4" style="font-size: 1.1rem; font-weight: 700; background: rgba(251,191,36,0.1); padding: 10px; border-radius: var(--radius-xs);"></p>
+            <button class="btn btn-primary w-100" onclick="closeAlarmModal()">I took my medicine</button>
+        </div>
+    </div>
+
+    <!-- Image Viewer Modal -->
+    <div class="modal-overlay" id="image-viewer-modal">
+        <div class="modal card image-viewer-modal">
+            <div class="modal-header" style="margin-bottom:5px;">
+                <h3 class="font-medium">Document Viewer</h3>
+                <button class="icon-btn" onclick="closeImageViewer()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="image-viewer-body"><img id="viewer-image" src="" alt="Document Full View"></div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <!-- Links to separate JS logic -->
+    <script src="script.js"></script>
+</body>
+</html>
