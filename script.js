@@ -1,10 +1,14 @@
 const DB_KEY = 'medvault_full_data';
+const dummyRxImage = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='700' style='background:%23f8fafc;font-family:sans-serif;'%3E%3Crect width='100%25' height='100%25' fill='%23f8fafc' rx='10'/%3E%3Crect x='20' y='20' width='560' height='660' fill='%23ffffff' stroke='%23e2e8f0' stroke-width='2' rx='8'/%3E%3Ctext x='50' y='70' font-size='26' font-weight='bold' fill='%230f172a'%3ECITY HOSPITAL%3C/text%3E%3Ctext x='50' y='95' font-size='14' fill='%2364748b'%3E123 Medical Drive, Healthville%3C/text%3E%3Cline x1='50' y1='120' x2='550' y2='120' stroke='%23cbd5e1' stroke-width='2'/%3E%3Ctext x='50' y='160' font-size='16' fill='%23334155'%3E%3Ctspan font-weight='bold'%3EPatient Name:%3C/tspan%3E John Doe%3C/text%3E%3Ctext x='350' y='160' font-size='16' fill='%23334155'%3E%3Ctspan font-weight='bold'%3EDate:%3C/tspan%3E April 10, 2026%3C/text%3E%3Ctext x='50' y='190' font-size='16' fill='%23334155'%3E%3Ctspan font-weight='bold'%3EPatient ID:%3C/tspan%3E PT-98234%3C/text%3E%3Ctext x='350' y='190' font-size='16' fill='%23334155'%3E%3Ctspan font-weight='bold'%3EAge/Sex:%3C/tspan%3E 45 / Male%3C/text%3E%3Crect x='50' y='220' width='500' height='40' fill='%23f1f5f9' rx='4'/%3E%3Ctext x='65' y='245' font-size='18' font-weight='bold' fill='%230f172a'%3ECLINICAL DIAGNOSIS%3C/text%3E%3Ctext x='50' y='290' font-size='16' fill='%230f172a'%3EPrimary: Hypertension (Essential)%3C/text%3E%3Ctext x='50' y='320' font-size='16' fill='%230f172a'%3EVitals Logged:%3C/text%3E%3Ctext x='70' y='345' font-size='15' fill='%23334155'%3E- Blood Pressure: 130/80 mmHg%3C/text%3E%3Ctext x='70' y='370' font-size='15' fill='%23334155'%3E- Heart Rate: 72 bpm%3C/text%3E%3Ctext x='70' y='395' font-size='15' fill='%23334155'%3E- Weight: 185 lbs%3C/text%3E%3Crect x='50' y='430' width='500' height='40' fill='%23f1f5f9' rx='4'/%3E%3Ctext x='65' y='455' font-size='18' font-weight='bold' fill='%230f172a'%3ERX / PRESCRIPTION%3C/text%3E%3Ctext x='50' y='500' font-size='16' fill='%230f172a'%3E1. Lisinopril 10mg%3C/text%3E%3Ctext x='70' y='525' font-size='14' fill='%2364748b'%3ETake one tablet daily in the morning after food.%3C/text%3E%3Cline x1='50' y1='600' x2='250' y2='600' stroke='%2394a3b8' stroke-width='1'/%3E%3Ctext x='50' y='620' font-size='14' font-weight='bold' fill='%23334155'%3EDr. Emily Chen, MD%3C/text%3E%3Ctext x='50' y='640' font-size='12' fill='%2364748b'%3ECardiology Department%3C/text%3E%3C/svg%3E";
+
+const dummyLabImage = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='700' style='background:%23f8fafc;font-family:sans-serif;'%3E%3Crect width='100%25' height='100%25' fill='%23f8fafc' rx='10'/%3E%3Crect x='20' y='20' width='560' height='660' fill='%23ffffff' stroke='%23e2e8f0' stroke-width='2' rx='8'/%3E%3Ctext x='50' y='70' font-size='26' font-weight='bold' fill='%230284c7'%3ELABCORP DIAGNOSTICS%3C/text%3E%3Ctext x='50' y='95' font-size='14' fill='%2364748b'%3EComplete Blood Count &amp; Metabolic Panel%3C/text%3E%3Cline x1='50' y1='120' x2='550' y2='120' stroke='%23cbd5e1' stroke-width='2'/%3E%3Ctext x='50' y='160' font-size='16' fill='%23334155'%3E%3Ctspan font-weight='bold'%3EPatient:%3C/tspan%3E John Doe%3C/text%3E%3Ctext x='350' y='160' font-size='16' fill='%23334155'%3E%3Ctspan font-weight='bold'%3EDate:%3C/tspan%3E March 15, 2026%3C/text%3E%3Crect x='50' y='200' width='500' height='40' fill='%23e0f2fe' rx='4'/%3E%3Ctext x='65' y='225' font-size='18' font-weight='bold' fill='%230369a1'%3ETEST RESULTS%3C/text%3E%3Ctext x='50' y='280' font-size='16' font-weight='bold' fill='%23334155'%3ETest Name%3C/text%3E%3Ctext x='250' y='280' font-size='16' font-weight='bold' fill='%23334155'%3EResult%3C/text%3E%3Ctext x='400' y='280' font-size='16' font-weight='bold' fill='%23334155'%3EReference%3C/text%3E%3Ctext x='50' y='320' font-size='16' fill='%230f172a'%3EFasting Blood Sugar%3C/text%3E%3Ctext x='250' y='320' font-size='16' font-weight='bold' fill='%23b91c1c'%3E115 mg/dL (H)%3C/text%3E%3Ctext x='400' y='320' font-size='16' fill='%2364748b'%3E70 - 99 mg/dL%3C/text%3E%3Ctext x='50' y='360' font-size='16' fill='%230f172a'%3EHbA1c%3C/text%3E%3Ctext x='250' y='360' font-size='16' fill='%230f172a'%3E5.9 %25%3C/text%3E%3Ctext x='400' y='360' font-size='16' fill='%2364748b'%3E&lt; 5.7 %25%3C/text%3E%3Ctext x='50' y='400' font-size='16' fill='%230f172a'%3EHemoglobin%3C/text%3E%3Ctext x='250' y='400' font-size='16' fill='%230f172a'%3E14.2 g/dL%3C/text%3E%3Ctext x='400' y='400' font-size='16' fill='%2364748b'%3E13.8 - 17.2%3C/text%3E%3Ctext x='50' y='440' font-size='16' fill='%230f172a'%3EWhite Blood Cells%3C/text%3E%3Ctext x='250' y='440' font-size='16' fill='%230f172a'%3E6.5 x10^3/uL%3C/text%3E%3Ctext x='400' y='440' font-size='16' fill='%2364748b'%3E4.5 - 11.0%3C/text%3E%3Cline x1='50' y1='520' x2='250' y2='520' stroke='%2394a3b8' stroke-width='1'/%3E%3Ctext x='50' y='540' font-size='14' font-weight='bold' fill='%23334155'%3EVerified by Pathology Dept.%3C/text%3E%3C/svg%3E";
+
 const defaultData = {
     users:[{id:'u1',name:'John Doe',relation:'Self'},{id:'u2',name:'Jane Doe',relation:'Spouse'}],
     currentUser:'u1',
     records:[
-        {id:'r1',userId:'u1',date:'2026-04-10',doctor:'City Hospital',diagnosis:'Hypertension Checkup',medicines:['Lisinopril'],type:'Visit',image:null},
-        {id:'r2',userId:'u1',date:'2026-03-15',doctor:'LabCorp Corp',diagnosis:'Routine Blood Test',medicines:[],type:'Lab',image:null}
+        {id:'r1',userId:'u1',date:'2026-04-10',doctor:'City Hospital',diagnosis:'Hypertension Checkup',medicines:['Lisinopril'],type:'Visit',image:dummyRxImage},
+        {id:'r2',userId:'u1',date:'2026-03-15',doctor:'LabCorp Corp',diagnosis:'Routine Blood Test',medicines:[],type:'Lab',image:dummyLabImage}
     ],
     vitals:{
         'u1':{dates:['Jan','Feb','Mar','Apr'],sugar:[110,105,115,98],bpSys:[130,128,125,120],hba1c:[6.5,6.2,5.9,5.8]},
@@ -29,6 +33,16 @@ const drugInteractions = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+    // ---  If records exist from an old session without images, attach them automatically! ---
+    const needsSave = appState.records.some(r => (r.id === 'r1' || r.id === 'r2') && !r.image);
+    if (needsSave) {
+        const r1 = appState.records.find(r => r.id === 'r1');
+        const r2 = appState.records.find(r => r.id === 'r2');
+        if (r1 && !r1.image) r1.image = dummyRxImage;
+        if (r2 && !r2.image) r2.image = dummyLabImage;
+        saveState();
+    }
+    
     if (!appState.reminders) appState.reminders =[];
     Object.values(appState.vitals).forEach(v => { if (!v.hba1c) v.hba1c = v.dates.map(() => null); });
     document.getElementById('vital-date').valueAsDate = new Date();
@@ -801,7 +815,6 @@ function showToast(message) {
 
 /* ── 2. 3D CARD TILT EFFECT ─────────────────────────────────────── */
 function init3DCardTilt() {
-    // Apply tilt only on non-touch devices
     if (window.matchMedia('(hover: none)').matches) return;
 
     document.addEventListener('mousemove', e => {
@@ -809,10 +822,9 @@ function init3DCardTilt() {
             const rect = card.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
-            // Only tilt when mouse is inside card
             if (x<-20||x>rect.width+20||y<-20||y>rect.height+20) return;
             const cx = rect.width/2, cy = rect.height/2;
-            const rx = ((y-cy)/cy) * -5;  // max ±5deg
+            const rx = ((y-cy)/cy) * -5;
             const ry = ((x-cx)/cx) *  5;
             card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-3px)`;
             card.style.transition = 'transform 0.12s ease';
